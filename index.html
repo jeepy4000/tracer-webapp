@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Image Tracer Web App</title>
+<style>
+  body { font-family: sans-serif; margin: 20px; }
+  #canvas { border: 1px solid #ccc; display: block; margin: 10px 0; }
+  button { margin-right: 5px; }
+</style>
+</head>
+<body>
+
+<h2>Image Tracer Web App</h2>
+
+<input type="file" id="fileInput" accept="image/*" />
+<br/>
+
+<button id="zoomIn">Zoom In</button>
+<button id="zoomOut">Zoom Out</button>
+<button id="left">Left</button>
+<button id="right">Right</button>
+<button id="up">Up</button>
+<button id="down">Down</button>
+<button id="fit">Fit to Screen</button>
+
+<canvas id="canvas" width="600" height="400"></canvas>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let img = new Image();
+  let scale = 1;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      img.src = ev.target.result;
+      img.onload = () => {
+        scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        offsetX = (canvas.width - img.width * scale) / 2;
+        offsetY = (canvas.height - img.height * scale) / 2;
+        draw();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+  }
+
+  document.getElementById('zoomIn').onclick = () => {
+    scale *= 1.1;
+    draw();
+  };
+
+  document.getElementById('zoomOut').onclick = () => {
+    scale /= 1.1;
+    draw();
+  };
+
+  document.getElementById('left').onclick = () => {
+    offsetX -= 10;
+    draw();
+  };
+
+  document.getElementById('right').onclick = () => {
+    offsetX += 10;
+    draw();
+  };
+
+  document.getElementById('up').onclick = () => {
+    offsetY -= 10;
+    draw();
+  };
+
+  document.getElementById('down').onclick = () => {
+    offsetY += 10;
+    draw();
+  };
+
+  document.getElementById('fit').onclick = () => {
+    scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+    offsetX = (canvas.width - img.width * scale) / 2;
+    offsetY = (canvas.height - img.height * scale) / 2;
+    draw();
+  };
+</script>
+
+</body>
+</html>
