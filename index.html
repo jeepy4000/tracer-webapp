@@ -2,60 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Image Tracer Web App</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      width: 100%;
+      overflow: hidden;
       font-family: sans-serif;
+      background: #f9f9f9;
     }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      width: 100vw;
+    #controls {
       padding: 10px;
-      box-sizing: border-box;
+      background: #ddd;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-
-    .controls {
-      margin-bottom: 10px;
-    }
-
-    canvas {
-      flex-grow: 1;
-      width: 100%;
-      height: 100%;
-      border: 1px solid #ccc;
-    }
-
     button {
-      margin-right: 5px;
-      margin-top: 5px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    #canvas {
+      display: block;
+      border-top: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Image Tracer Web App</h2>
-
-  <div class="controls">
-    <input type="file" id="fileInput" accept="image/*" /><br />
-    <button id="zoomIn">Zoom In</button>
-    <button id="zoomOut">Zoom Out</button>
-    <button id="left">Left</button>
-    <button id="right">Right</button>
-    <button id="up">Up</button>
-    <button id="down">Down</button>
-    <button id="fit">Fit to Screen</button>
-  </div>
-
-  <canvas id="canvas"></canvas>
+<div id="controls">
+  <input type="file" id="fileInput" accept="image/*" />
+  <button id="zoomIn">Zoom In</button>
+  <button id="zoomOut">Zoom Out</button>
+  <button id="left">Left</button>
+  <button id="right">Right</button>
+  <button id="up">Up</button>
+  <button id="down">Down</button>
+  <button id="fit">Fit to Screen</button>
 </div>
+
+<canvas id="canvas"></canvas>
 
 <script>
   const canvas = document.getElementById('canvas');
@@ -66,9 +53,9 @@
   let offsetY = 0;
 
   function resizeCanvas() {
-    canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - document.querySelector('.controls').offsetHeight - 60;
-    if (img.src) draw();
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - document.getElementById('controls').offsetHeight;
+    draw();
   }
 
   window.addEventListener('resize', resizeCanvas);
@@ -81,10 +68,7 @@
     reader.onload = function(ev) {
       img.src = ev.target.result;
       img.onload = () => {
-        scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-        offsetX = (canvas.width - img.width * scale) / 2;
-        offsetY = (canvas.height - img.height * scale) / 2;
-        draw();
+        fitToScreen();
       }
     };
     reader.readAsDataURL(file);
@@ -92,7 +76,16 @@
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+    if (img.src) {
+      ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+    }
+  }
+
+  function fitToScreen() {
+    scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+    offsetX = (canvas.width - img.width * scale) / 2;
+    offsetY = (canvas.height - img.height * scale) / 2;
+    draw();
   }
 
   document.getElementById('zoomIn').onclick = () => {
@@ -106,32 +99,27 @@
   };
 
   document.getElementById('left').onclick = () => {
-    offsetX -= 20;
+    offsetX -= 10;
     draw();
   };
 
   document.getElementById('right').onclick = () => {
-    offsetX += 20;
+    offsetX += 10;
     draw();
   };
 
   document.getElementById('up').onclick = () => {
-    offsetY -= 20;
+    offsetY -= 10;
     draw();
   };
 
   document.getElementById('down').onclick = () => {
-    offsetY += 20;
+    offsetY += 10;
     draw();
   };
 
   document.getElementById('fit').onclick = () => {
-    if (img.width && img.height) {
-      scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-      offsetX = (canvas.width - img.width * scale) / 2;
-      offsetY = (canvas.height - img.height * scale) / 2;
-      draw();
-    }
+    fitToScreen();
   };
 </script>
 
