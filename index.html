@@ -11,6 +11,7 @@
       overflow: hidden;
       font-family: sans-serif;
       background: #f9f9f9;
+      touch-action: none; /* disable zoom/pan gesture */
     }
     #controls {
       padding: 10px;
@@ -26,6 +27,7 @@
     #canvas {
       display: block;
       border-top: 1px solid #ccc;
+      touch-action: none; /* disable zoom/pan gesture on canvas */
     }
   </style>
 </head>
@@ -121,7 +123,13 @@
   document.getElementById('fit').onclick = () => {
     fitToScreen();
   };
+
+  // 🛑 Prevent pinch-zoom & gestures
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('gesturechange', e => e.preventDefault());
+  document.addEventListener('gestureend', e => e.preventDefault());
 </script>
 
 </body>
 </html>
+
