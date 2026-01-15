@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Image Tracer Web App</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+      background: #f9f9f9;
+      touch-action: none;
+    }
+
+    /* Password screen */
+    #lockScreen {
+      position: fixed;
+      inset: 0;
+      background: #222;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #lockBox {
+      background: #333;
+      padding: 25px;
+      border-radius: 8px;
+      text-align: center;
+      width: 260px;
+    }
+
+    #lockBox input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      box-sizing: border-box;
+    }
+
+    #lockBox button {
+      margin-top: 12px;
+      padding: 8px 12px;
+      font-size: 15px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    #error {
+      color: #ff6b6b;
+      margin-top: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    /* App UI */
+    #app {
+      display: none;
+    }
+
+    #controls {
+      padding: 10px;
+      background: #ddd;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    #canvas {
+      display: block;
+      border-top: 1px solid #ccc;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 🔒 Password Screen -->
+<div id="lockScreen">
+  <div id="lockBox">
+    <h2>Enter Password</h2>
+    <input type="password" id="passwordInput" placeholder="Password" />
+    <button id="unlockBtn">Unlock</button>
+    <div id="error">Wrong password</div>
+  </div>
+</div>
+
+<!-- ✅ Main App -->
+<div id="app">
+  <div id="controls">
+    <input type="file" id="fileInput" accept="image/*" />
+    <button id="zoomIn">Zoom In</button>
+    <button id="zoomOut">Zoom Out</button>
+    <button id="left">Left</button>
+    <button id="right">Right</button>
+    <button id="up">Up</button>
+    <button id="down">Down</button>
+    <button id="fit">Fit to Screen</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+</div>
+
+<script>
+  /* 🔐 Password Logic */
+  const PASSWORD = "IMAN";
+
+  const lockScreen = document.getElementById("lockScreen");
+  const app = document.getElementById("app");
+  const passwordInput = document.getElementById("passwordInput");
+  const error = document.getElementById("error");
+
+  document.getElementById("unlockBtn").onclick = () => {
+    if (passwordInput.value === PASSWORD) {
+      lockScreen.style.display = "none";
+      app.style.display = "block";
+      resizeCanvas();
+    } else {
+      error.style.display = "block";
+      passwordInput.value = "";
+    }
+  };
+
+  passwordInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      document.getElementById("unlockBtn").click();
+    }
+  });
+
+  /* 🖼 Image Tracer App */
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let img = new Image();
+  let scale = 1;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - document.getElementById('controls').offsetHeight;
+    draw();
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      img.src = ev.target.result;
+      img.onload = () => {
+        fitToScreen();
+      };
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (img.src) {
+      ctx.drawImage(
+        img,
+        offsetX,
+        offsetY,
+        img.width * scale,
+        img.height * scale
+      );
+    }
+  }
+
+  function fitToScreen() {
+    scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+    offsetX = (canvas.width - img.width * scale) / 2;
+    offsetY = (canvas.height - img.height * scale) / 2;
+    draw();
+  }
+
+  document.getElementById('zoomIn').onclick = () => {
+    scale *= 1.05;
+    draw();
+  };
+
+  document.getElementById('zoomOut').onclick = () => {
+    scale /= 1.05;
+    draw();
+  };
+
+  document.getElementById('left').onclick = () => {
+    offsetX -= 10;
+    draw();
+  };
+
+  document.getElementById('right').onclick = () => {
+    offsetX += 10;
+    draw();
+  };
+
+  document.getElementById('up').onclick = () => {
+    offsetY -= 10;
+    draw();
+  };
+
+  document.getElementById('down').onclick = () => {
+    offsetY += 10;
+    draw();
+  };
+
+  document.getElementById('fit').onclick = () => {
+    fitToScreen();
+  };
+
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('gesturechange', e => e.preventDefault());
+  document.addEventListener('gestureend', e => e.preventDefault());
+</script>
+
+</body>
+</html>
