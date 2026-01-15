@@ -15,6 +15,7 @@
       touch-action: none;
     }
 
+    /* Password screen */
     #lockScreen {
       position: fixed;
       inset: 0;
@@ -70,6 +71,7 @@
       z-index: 5000;
     }
 
+    /* App UI */
     #app {
       display: none;
     }
@@ -96,7 +98,8 @@
 </head>
 <body>
 
-<div id="lockScreen">
+<!-- 🔒 Password Screen fr -->
+  <div id="lockScreen">
   <div id="lockBox">
     <h2>Enter Password</h2>
     <input type="password" id="passwordInput" placeholder="Password" />
@@ -105,6 +108,7 @@
   </div>
 </div>
 
+<!-- ✅ Main App -->
 <div id="app">
   <div id="controls">
     <input type="file" id="fileInput" accept="image/*" />
@@ -127,9 +131,8 @@
   <canvas id="canvas"></canvas>
 </div>
 
-<textarea id="textInput" placeholder="Type here"></textarea>
-
 <script>
+  /* 🔐 Password Logic */
   const PASSWORD = "IMAN";
 
   const lockScreen = document.getElementById("lockScreen");
@@ -154,14 +157,13 @@
     }
   });
 
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-
+  /* 🖼 Image Tracer App */
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
   let img = new Image();
   let scale = 1;
   let offsetX = 0;
   let offsetY = 0;
-
   let textMode = false;
   let textContent = "";
   let textX = 100;
@@ -169,28 +171,30 @@
   let textScale = 1;
   let textFont = "Arial";
 
+
   function resizeCanvas() {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - document.getElementById("controls").offsetHeight;
+    canvas.height = window.innerHeight - document.getElementById('controls').offsetHeight;
     draw();
   }
 
-  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener('resize', resizeCanvas);
 
-  document.getElementById("fileInput").addEventListener("change", e => {
+  document.getElementById('fileInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = function(ev) {
       img.src = ev.target.result;
-      img.onload = fitToScreen;
+      img.onload = () => {
+        fitToScreen();
+      };
     };
     reader.readAsDataURL(file);
   });
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     if (img.src) {
       ctx.drawImage(
         img,
@@ -198,6 +202,7 @@
         offsetY,
         img.width * scale,
         img.height * scale
+
       );
     }
 
@@ -208,7 +213,10 @@
       ctx.fillText(textContent, textX, textY);
       ctx.restore();
     }
-  }
+}
+
+    
+  
 
   function fitToScreen() {
     scale = Math.min(canvas.width / img.width, canvas.height / img.height);
@@ -217,43 +225,45 @@
     draw();
   }
 
-  document.getElementById("zoomIn").onclick = () => {
+  document.getElementById('zoomIn').onclick = () => {
     scale *= 1.05;
     textScale *= 1.05;
     draw();
   };
 
-  document.getElementById("zoomOut").onclick = () => {
+  document.getElementById('zoomOut').onclick = () => {
     scale /= 1.05;
     textScale /= 1.05;
     draw();
   };
 
-  document.getElementById("left").onclick = () => {
+  document.getElementById('left').onclick = () => {
     offsetX -= 10;
-    if (textMode) textX -= 10;
+    if (!textMode) textX -= 10;
     draw();
   };
 
-  document.getElementById("right").onclick = () => {
+  document.getElementById('right').onclick = () => {
     offsetX += 10;
-    if (textMode) textX += 10;
+    if (!textMode) textX += 10;
     draw();
   };
 
-  document.getElementById("up").onclick = () => {
+  document.getElementById('up').onclick = () => {
     offsetY -= 10;
-    if (textMode) textY -= 10;
+    if (!textMode) textY -= 10;
     draw();
   };
 
-  document.getElementById("down").onclick = () => {
+  document.getElementById('down').onclick = () => {
     offsetY += 10;
-    if (textMode) textY += 10;
+    if (!textMode) textY += 10;
     draw();
   };
 
-  document.getElementById("fit").onclick = fitToScreen;
+  document.getElementById('fit').onclick = () => {
+    fitToScreen();
+  };
 
   const textInput = document.getElementById("textInput");
   const textBtn = document.getElementById("textMode");
@@ -262,6 +272,11 @@
   textBtn.onclick = () => {
     textMode = !textMode;
     textInput.style.display = textMode ? "block" : "none";
+
+    if (!textMode) {
+      textContent = textInput.value;
+      draw();
+    }
   };
 
   textInput.addEventListener("input", () => {
@@ -274,10 +289,14 @@
     draw();
   };
 
-  document.addEventListener("gesturestart", e => e.preventDefault());
-  document.addEventListener("gesturechange", e => e.preventDefault());
-  document.addEventListener("gestureend", e => e.preventDefault());
+
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('gesturechange', e => e.preventDefault());
+  document.addEventListener('gestureend', e => e.preventDefault());
 </script>
 
+
+  <textarea id="textInput" placeholder="Type here"></textarea>
+  
 </body>
 </html>
