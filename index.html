@@ -58,6 +58,19 @@
       display: none;
     }
 
+    #textInput {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 500px;
+      height: 80px;
+      font-size: 24px;
+      display: none;
+      z-index: 5000;
+    }
+
     /* App UI */
     #app {
       display: none;
@@ -86,7 +99,7 @@
 <body>
 
 <!-- 🔒 Password Screen fr -->
-<div id="lockScreen">
+  <div id="lockScreen">
   <div id="lockBox">
     <h2>Enter Password</h2>
     <input type="password" id="passwordInput" placeholder="Password" />
@@ -106,6 +119,13 @@
     <button id="up">Up</button>
     <button id="down">Down</button>
     <button id="fit">Fit to Screen</button>
+    <button id="textMode">Text Mode</button>
+    <select id="fontSelect">
+      <option value="Arial">Arial</option>
+      <option value="Comic Sans MS">Comic Sans</option>
+      <option value="Times New Roman">Times</option>
+      <option value="Courier New">Courier</option>
+    </select>
   </div>
 
   <canvas id="canvas"></canvas>
@@ -144,6 +164,13 @@
   let scale = 1;
   let offsetX = 0;
   let offsetY = 0;
+  let textMode = false;
+  let textContent = "";
+  let textX = 100;
+  let textY = 100;
+  let textScale = 1;
+  let textFont = "Arial";
+
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -175,6 +202,14 @@
         offsetY,
         img.width * scale,
         img.height * scale
+        if (textContent) {
+        ctx.save();
+        ctx.font = `${30 * textScale}px ${textFont}`;
+        ctx.fillStyle = "black";
+        ctx.fillText(textContent, textX, textY);
+        ctx.restore();
+}
+
       );
     }
   }
@@ -188,31 +223,37 @@
 
   document.getElementById('zoomIn').onclick = () => {
     scale *= 1.05;
+    textScale *= 1.05;
     draw();
   };
 
   document.getElementById('zoomOut').onclick = () => {
     scale /= 1.05;
+    textScale /= 1.05;
     draw();
   };
 
   document.getElementById('left').onclick = () => {
     offsetX -= 10;
+    if (!textMode) textX -= 10;
     draw();
   };
 
   document.getElementById('right').onclick = () => {
     offsetX += 10;
+    if (!textMode) textX += 10;
     draw();
   };
 
   document.getElementById('up').onclick = () => {
     offsetY -= 10;
+    if (!textMode) textY -= 10;
     draw();
   };
 
   document.getElementById('down').onclick = () => {
     offsetY += 10;
+    if (!textMode) textY += 10;
     draw();
   };
 
@@ -220,10 +261,38 @@
     fitToScreen();
   };
 
+  const textInput = document.getElementById("textInput");
+  const textBtn = document.getElementById("textMode");
+  const fontSelect = document.getElementById("fontSelect");
+
+  textBtn.onclick = () => {
+    textMode = !textMode;
+    textInput.style.display = textMode ? "block" : "none";
+
+    if (!textMode) {
+      textContent = textInput.value;
+      draw();
+    }
+  };
+
+  textInput.addEventListener("input", () => {
+    textContent = textInput.value;
+    draw();
+  });
+
+  fontSelect.onchange = () => {
+    textFont = fontSelect.value;
+    draw();
+  };
+
+
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('gesturechange', e => e.preventDefault());
   document.addEventListener('gestureend', e => e.preventDefault());
 </script>
 
+
+  <textarea id="textInput" placeholder="Type here"></textarea>
+  
 </body>
 </html>
